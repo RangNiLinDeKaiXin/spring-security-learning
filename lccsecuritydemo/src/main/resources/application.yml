@@ -8,10 +8,14 @@ spring:
     store-type: none
 server:
   port: 6060
-security:
-  basic:
-    enabled: false
-
+lcc:
+  security:
+    browser-properties:
+      login_type: REDIRECT
+#lcc:
+#  security:
+#    browser-properties:
+#      loginPage: /demo-signIn.html
 
 
 
