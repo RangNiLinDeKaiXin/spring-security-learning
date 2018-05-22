@@ -1,6 +1,7 @@
 package com.lcc.brower.config;
 
 import com.lcc.security.properties.SecurityProperties;
+import com.lcc.security.validate.code.ValidateCodeFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,6 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * 浏览器配置
@@ -26,6 +28,8 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private AuthenticationFailureHandler lccAuthenticationFailureHandler;
 
+	@Autowired
+	private ValidateCodeFilter validateCodeFilter;
 	//spring 加密解码 用来匹配密码
 	@Bean
 	public PasswordEncoder passwordEncoder() {
@@ -34,7 +38,9 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
+
 		http
+				.addFilterBefore(validateCodeFilter, UsernamePasswordAuthenticationFilter.class)
 				//.httpBasic() 默认
 				.formLogin()
 				//	.loginPage("/lcc-signIn.html") //自定义登录页面
@@ -45,7 +51,9 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
 				.and()
 				.authorizeRequests()
 				//	.antMatchers("/lcc-signIn.html").permitAll()
-				.antMatchers("/authentication/require", securityProperties.getBrowserProperties().getLoginPage()).permitAll()
+				.antMatchers("/authentication/require",
+						securityProperties.getBrowserProperties().getLoginPage(),
+						"/code/image").permitAll()
 				//任何请求都要认证
 				.anyRequest()
 				.authenticated()

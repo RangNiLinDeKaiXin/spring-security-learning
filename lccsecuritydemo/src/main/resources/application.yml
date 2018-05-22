@@ -8,10 +8,10 @@ spring:
     store-type: none
 server:
   port: 6060
-lcc:
-  security:
-    browser-properties:
-      login_type: REDIRECT
+#lcc:
+#  security:
+#    browser-properties:
+#      login_type: REDIRECT
 #lcc:
 #  security:
 #    browser-properties:
