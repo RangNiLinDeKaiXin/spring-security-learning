@@ -57,15 +57,18 @@ public class ValidateCodeFilter extends OncePerRequestFilter implements Initiali
 	public void setSecurityProperties(SecurityProperties securityProperties) {
 		this.securityProperties = securityProperties;
 	}
+
 	/**
 	 * 初始化要拦截的url配置信息
 	 */
 	@Override
 	public void afterPropertiesSet() throws ServletException {
 		super.afterPropertiesSet();
-		String[] configUrls = org.apache.commons.lang.StringUtils.splitByWholeSeparatorPreserveAllTokens(securityProperties.getValidateCodeProperties().getImageCode().getUrl(), ",");
-		for (String configUrl : configUrls) {
-			urls.add(configUrl);
+		if (StringUtils.hasText(securityProperties.getValidateCodeProperties().getImageCode().getUrl())) {
+			String[] configUrls = org.apache.commons.lang.StringUtils.splitByWholeSeparatorPreserveAllTokens(securityProperties.getValidateCodeProperties().getImageCode().getUrl(), ",");
+			for (String configUrl : configUrls) {
+				urls.add(configUrl);
+			}
 		}
 		urls.add("/authentication/form");
 	}
@@ -92,8 +95,8 @@ public class ValidateCodeFilter extends OncePerRequestFilter implements Initiali
 
 	}
 
-	private void validate(ServletWebRequest servletWebRequest)   {
-		ImageCode  imageCode=null;
+	private void validate(ServletWebRequest servletWebRequest) {
+		ImageCode imageCode = null;
 		String code = null;
 		try {
 			imageCode = (ImageCode) sessionStrategy.getAttribute(servletWebRequest, ValidateCodeController.SESSION_KEY);

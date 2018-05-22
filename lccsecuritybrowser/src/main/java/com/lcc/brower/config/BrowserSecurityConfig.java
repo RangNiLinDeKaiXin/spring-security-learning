@@ -3,15 +3,21 @@ package com.lcc.brower.config;
 import com.lcc.security.properties.SecurityProperties;
 import com.lcc.security.validate.code.ValidateCodeFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+
+import javax.sql.DataSource;
 
 /**
  * 浏览器配置
@@ -28,12 +34,27 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private AuthenticationFailureHandler lccAuthenticationFailureHandler;
 
+	@Qualifier("dataSource")
+	@Autowired
+	private DataSource dataSource;
+	@Autowired
+	private UserDetailsService userDetailsService;
 
 
 	//spring 加密解码 用来匹配密码
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
+	}
+
+	//记住我 读写数据库
+	@Bean
+	public PersistentTokenRepository persistentTokenRepository() {
+		JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
+		tokenRepository.setDataSource(dataSource);
+		//启动建表
+	//	tokenRepository.setCreateTableOnStartup(true);
+		return tokenRepository;
 	}
 
 	@Override
@@ -51,6 +72,12 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
 				.loginProcessingUrl("/authentication/form") //为了让UsernamePasswordAuthenticationFilter 知道处理表单认证url 默认是/login
 				.successHandler(lccAuthenticationSuccessHandler)
 				.failureHandler(lccAuthenticationFailureHandler)
+				.and()
+				.rememberMe()
+					.tokenRepository(persistentTokenRepository())
+					.tokenValiditySeconds(securityProperties.getBrowserProperties().getRememberme())
+					//取用户名做登录
+					.userDetailsService(userDetailsService)
 				.and()
 				.authorizeRequests()
 				//	.antMatchers("/lcc-signIn.html").permitAll()
