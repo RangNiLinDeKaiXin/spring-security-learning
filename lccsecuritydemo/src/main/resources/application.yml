@@ -8,12 +8,12 @@ spring:
     store-type: none
 server:
   port: 6060
-#lcc:
-#  security:
-#    browser-properties:
-#      login_type: REDIRECT
-#lcc:
-#  security:
+lcc:
+  security:
+    validate-code-properties:
+      imageCode:
+        length: 5
+#        url: /user/*
 #    browser-properties:
 #      loginPage: /demo-signIn.html
 

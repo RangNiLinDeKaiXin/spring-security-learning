@@ -28,8 +28,8 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private AuthenticationFailureHandler lccAuthenticationFailureHandler;
 
-	@Autowired
-	private ValidateCodeFilter validateCodeFilter;
+
+
 	//spring 加密解码 用来匹配密码
 	@Bean
 	public PasswordEncoder passwordEncoder() {
@@ -38,7 +38,10 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-
+		ValidateCodeFilter validateCodeFilter = new ValidateCodeFilter();
+		validateCodeFilter.setAuthenticationFailureHandler(lccAuthenticationFailureHandler);
+		validateCodeFilter.setSecurityProperties(securityProperties);
+		validateCodeFilter.afterPropertiesSet();
 		http
 				.addFilterBefore(validateCodeFilter, UsernamePasswordAuthenticationFilter.class)
 				//.httpBasic() 默认

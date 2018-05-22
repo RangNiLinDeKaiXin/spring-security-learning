@@ -11,4 +11,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "lcc.security")
 public class SecurityProperties {
  private BrowserProperties browserProperties =new BrowserProperties();
+
+ private ValidateCodeProperties validateCodeProperties= new ValidateCodeProperties();
 }
