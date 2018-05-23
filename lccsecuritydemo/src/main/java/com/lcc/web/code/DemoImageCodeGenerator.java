@@ -20,7 +20,7 @@ public class DemoImageCodeGenerator implements ValidateCodeGenerator {
 	 * @return
 	 */
 	@Override
-	public ImageCode generate(ServletWebRequest request) {
+	public ImageCode generate(ServletWebRequest request) { //ServletWebRequest spring 工具类封装请求与响应
 		System.out.println("更高级的图形验证码生成代码");
 		return null;
 	}

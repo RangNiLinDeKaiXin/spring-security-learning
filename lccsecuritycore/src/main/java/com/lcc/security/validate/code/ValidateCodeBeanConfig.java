@@ -24,12 +24,17 @@ public class ValidateCodeBeanConfig {
      */
     @Bean
     @ConditionalOnMissingBean(name = "imageCodeGenerator")
-    public ValidateCodeGenerator imageValidateCodeGenerator() {
+    public ValidateCodeGenerator imageCodeGenerator() {
         ImageCodeGenerator imageCodeGenerator = new ImageCodeGenerator();
         imageCodeGenerator.setSecurityProperties(securityProperties);
         return imageCodeGenerator;
     }
 
-
+    @Bean
+    @ConditionalOnMissingBean(name = "smsCodeSender")
+    public SmsCodeSender smsCodeSender() {
+        DefaultSmsCodeSender defaultSmsCodeSender = new DefaultSmsCodeSender();
+        return defaultSmsCodeSender;
+    }
 
 }

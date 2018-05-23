@@ -14,6 +14,6 @@ public interface ValidateCodeGenerator {
      * @param request
      * @return
      */
-    ImageCode generate(ServletWebRequest request);
+    BasicCode generate(ServletWebRequest request);
 
 }

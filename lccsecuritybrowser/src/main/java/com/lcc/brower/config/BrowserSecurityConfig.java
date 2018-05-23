@@ -1,6 +1,8 @@
 package com.lcc.brower.config;
 
+import com.lcc.security.authentication.mobile.SmsCodeAuthenticationSecurityConfig;
 import com.lcc.security.properties.SecurityProperties;
+import com.lcc.security.validate.code.SmsCodeFilter;
 import com.lcc.security.validate.code.ValidateCodeFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -37,9 +39,13 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Qualifier("dataSource")
 	@Autowired
 	private DataSource dataSource;
+
+	@Qualifier("myUserDetailsService")
 	@Autowired
 	private UserDetailsService userDetailsService;
 
+	@Autowired
+	private SmsCodeAuthenticationSecurityConfig smsCodeAuthenticationSecurityConfig;
 
 	//spring 加密解码 用来匹配密码
 	@Bean
@@ -53,7 +59,7 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
 		JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
 		tokenRepository.setDataSource(dataSource);
 		//启动建表
-	//	tokenRepository.setCreateTableOnStartup(true);
+		//	tokenRepository.setCreateTableOnStartup(true);
 		return tokenRepository;
 	}
 
@@ -63,7 +69,14 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
 		validateCodeFilter.setAuthenticationFailureHandler(lccAuthenticationFailureHandler);
 		validateCodeFilter.setSecurityProperties(securityProperties);
 		validateCodeFilter.afterPropertiesSet();
+
+
+		SmsCodeFilter smsCodeFilter = new SmsCodeFilter();
+		smsCodeFilter.setAuthenticationFailureHandler(lccAuthenticationFailureHandler);
+		smsCodeFilter.setSecurityProperties(securityProperties);
+		smsCodeFilter.afterPropertiesSet();
 		http
+				.addFilterBefore(smsCodeFilter, UsernamePasswordAuthenticationFilter.class)
 				.addFilterBefore(validateCodeFilter, UsernamePasswordAuthenticationFilter.class)
 				//.httpBasic() 默认
 				.formLogin()
@@ -74,19 +87,22 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
 				.failureHandler(lccAuthenticationFailureHandler)
 				.and()
 				.rememberMe()
-					.tokenRepository(persistentTokenRepository())
-					.tokenValiditySeconds(securityProperties.getBrowserProperties().getRememberme())
-					//取用户名做登录
-					.userDetailsService(userDetailsService)
+				.tokenRepository(persistentTokenRepository())
+				.tokenValiditySeconds(securityProperties.getBrowserProperties().getRememberme())
+				//取用户名做登录
+				.userDetailsService(userDetailsService)
 				.and()
 				.authorizeRequests()
 				//	.antMatchers("/lcc-signIn.html").permitAll()
 				.antMatchers("/authentication/require",
 						securityProperties.getBrowserProperties().getLoginPage(),
-						"/code/image").permitAll()
+						"/code/*").permitAll()
 				//任何请求都要认证
 				.anyRequest()
 				.authenticated()
-				.and().csrf().disable();
+				.and().csrf().disable()
+				.apply(smsCodeAuthenticationSecurityConfig)
+		;
+
 	}
 }
