@@ -1,5 +1,6 @@
-package com.lcc.security.validate.code;
+package com.lcc.security.validate.code.image;
 
+import com.lcc.security.validate.code.base.BasicCode;
 import lombok.Data;
 
 import java.awt.image.BufferedImage;

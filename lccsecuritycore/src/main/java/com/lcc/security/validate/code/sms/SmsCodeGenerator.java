@@ -1,6 +1,8 @@
-package com.lcc.security.validate.code;
+package com.lcc.security.validate.code.sms;
 
 import com.lcc.security.properties.SecurityProperties;
+import com.lcc.security.validate.code.base.BasicCode;
+import com.lcc.security.validate.code.base.ValidateCodeGenerator;
 import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

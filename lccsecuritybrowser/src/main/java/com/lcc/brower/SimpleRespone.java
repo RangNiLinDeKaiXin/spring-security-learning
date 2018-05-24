@@ -1,4 +1,4 @@
-package com.lcc.brower.config;
+package com.lcc.brower;
 
 import lombok.Data;
 

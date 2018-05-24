@@ -1,7 +1,8 @@
-package com.lcc.security.validate.code;
+package com.lcc.security.validate.code.image;
 
 
 import com.lcc.security.properties.SecurityProperties;
+import com.lcc.security.validate.code.base.ValidateCodeGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.ServletRequestUtils;
 import org.springframework.web.context.request.ServletWebRequest;

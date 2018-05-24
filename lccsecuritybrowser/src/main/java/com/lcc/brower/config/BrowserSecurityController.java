@@ -1,5 +1,6 @@
 package com.lcc.brower.config;
 
+import com.lcc.brower.SimpleRespone;
 import com.lcc.security.properties.SecurityProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

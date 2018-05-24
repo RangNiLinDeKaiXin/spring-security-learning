@@ -1,9 +1,9 @@
 package com.lcc.brower.config;
 
+import com.lcc.security.authentication.FormAuthenticationConfig;
 import com.lcc.security.authentication.mobile.SmsCodeAuthenticationSecurityConfig;
 import com.lcc.security.properties.SecurityProperties;
-import com.lcc.security.validate.code.SmsCodeFilter;
-import com.lcc.security.validate.code.ValidateCodeFilter;
+import com.lcc.security.validate.code.ImageCodeSecurityConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -11,11 +11,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
@@ -47,11 +44,12 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private SmsCodeAuthenticationSecurityConfig smsCodeAuthenticationSecurityConfig;
 
-	//spring 加密解码 用来匹配密码
-	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
+	@Autowired
+	private ImageCodeSecurityConfig imageCodeSecurityConfig;
+
+	@Autowired
+	private FormAuthenticationConfig formAuthenticationConfig;
+
 
 	//记住我 读写数据库
 	@Bean
@@ -65,32 +63,19 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		ValidateCodeFilter validateCodeFilter = new ValidateCodeFilter();
-		validateCodeFilter.setAuthenticationFailureHandler(lccAuthenticationFailureHandler);
-		validateCodeFilter.setSecurityProperties(securityProperties);
-		validateCodeFilter.afterPropertiesSet();
-
-
-		SmsCodeFilter smsCodeFilter = new SmsCodeFilter();
-		smsCodeFilter.setAuthenticationFailureHandler(lccAuthenticationFailureHandler);
-		smsCodeFilter.setSecurityProperties(securityProperties);
-		smsCodeFilter.afterPropertiesSet();
+		formAuthenticationConfig.configure(http);
 		http
-				.addFilterBefore(smsCodeFilter, UsernamePasswordAuthenticationFilter.class)
-				.addFilterBefore(validateCodeFilter, UsernamePasswordAuthenticationFilter.class)
-				//.httpBasic() 默认
-				.formLogin()
-				//	.loginPage("/lcc-signIn.html") //自定义登录页面
-				.loginPage("/authentication/require")
-				.loginProcessingUrl("/authentication/form") //为了让UsernamePasswordAuthenticationFilter 知道处理表单认证url 默认是/login
-				.successHandler(lccAuthenticationSuccessHandler)
-				.failureHandler(lccAuthenticationFailureHandler)
+				// 应用验证码安全配置
+				.apply(imageCodeSecurityConfig)
 				.and()
-				.rememberMe()
-				.tokenRepository(persistentTokenRepository())
-				.tokenValiditySeconds(securityProperties.getBrowserProperties().getRememberme())
-				//取用户名做登录
-				.userDetailsService(userDetailsService)
+				// 应用短信验证码认证安全配置
+				.apply(smsCodeAuthenticationSecurityConfig)
+				.and()
+					.rememberMe()
+					.tokenRepository(persistentTokenRepository())
+					.tokenValiditySeconds(securityProperties.getBrowserProperties().getRememberme())
+					//取用户名做登录
+					.userDetailsService(userDetailsService)
 				.and()
 				.authorizeRequests()
 				//	.antMatchers("/lcc-signIn.html").permitAll()
@@ -101,7 +86,6 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
 				.anyRequest()
 				.authenticated()
 				.and().csrf().disable()
-				.apply(smsCodeAuthenticationSecurityConfig)
 		;
 
 	}

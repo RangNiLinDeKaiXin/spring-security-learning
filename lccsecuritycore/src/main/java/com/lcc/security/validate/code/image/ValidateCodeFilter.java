@@ -1,6 +1,8 @@
-package com.lcc.security.validate.code;
+package com.lcc.security.validate.code.image;
 
 import com.lcc.security.properties.SecurityProperties;
+import com.lcc.security.validate.code.ValidateCodeController;
+import com.lcc.security.validate.code.base.ValidateCodeException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.social.connect.web.HttpSessionSessionStrategy;

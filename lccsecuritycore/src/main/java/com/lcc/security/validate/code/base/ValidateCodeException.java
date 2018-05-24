@@ -1,4 +1,4 @@
-package com.lcc.security.validate.code;
+package com.lcc.security.validate.code.base;
 
 import org.springframework.security.core.AuthenticationException;
 

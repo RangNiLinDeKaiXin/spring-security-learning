@@ -1,5 +1,7 @@
 package com.lcc.security.authentication.mobile;
 
+import com.lcc.security.properties.SecurityProperties;
+import com.lcc.security.validate.code.sms.SmsCodeFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,12 +28,20 @@ public class SmsCodeAuthenticationSecurityConfig extends SecurityConfigurerAdapt
 
 	@Autowired
 	private AuthenticationFailureHandler lccAuthenticationFailureHandler;
-    @Qualifier("smsUserDeatailsService")
+	@Qualifier("smsUserDeatailsService")
 	@Autowired
 	private UserDetailsService userDeatailsService;
 
+	@Autowired
+	private SecurityProperties securityProperties;
+
 	@Override
 	public void configure(HttpSecurity http) throws Exception {
+		SmsCodeFilter smsCodeFilter = new SmsCodeFilter();
+		smsCodeFilter.setAuthenticationFailureHandler(lccAuthenticationFailureHandler);
+		smsCodeFilter.setSecurityProperties(securityProperties);
+		smsCodeFilter.afterPropertiesSet();
+
 		SmsCodeAuthenticationFilter smsCodeAuthenticationFilter = new SmsCodeAuthenticationFilter();
 		smsCodeAuthenticationFilter.setAuthenticationManager(http.getSharedObject(AuthenticationManager.class));
 		smsCodeAuthenticationFilter.setAuthenticationSuccessHandler(lccAuthenticationSuccessHandler);
@@ -41,7 +51,9 @@ public class SmsCodeAuthenticationSecurityConfig extends SecurityConfigurerAdapt
 		smsCodeAuthenticationProvider.setUserDetailsService(userDeatailsService);
 
 		// 将Provider添加到其中
-		http.authenticationProvider(smsCodeAuthenticationProvider)
+		http
+				.addFilterBefore(smsCodeFilter, UsernamePasswordAuthenticationFilter.class)
+				.authenticationProvider(smsCodeAuthenticationProvider)
 				// 将过滤器添加到UsernamePasswordAuthenticationFilter后面
 				.addFilterAfter(smsCodeAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
